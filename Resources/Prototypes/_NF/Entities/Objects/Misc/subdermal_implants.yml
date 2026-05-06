@@ -4,18 +4,19 @@
   parent: BaseSubdermalImplant
   id: MedicalTrackingImplant
   name: medical tracking implant
-  description: This implant has a tracking device monitor for the Medical radio channel.
+  description: This implant has a tracking device monitor for the Medical radio channel. It's given out for practically free, but [color=darkred]override[/color] your suit sensors.
   categories: [ HideSpawnMenu ]
   components:
     - type: SubdermalImplant
-#    - type: SuitSensor
-#      randomMode: false
-#      controlsLocked: true
-#      mode: SensorCords
-#      activationContainer: "implant"
-#    - type: DeviceNetwork
-#      deviceNetId: Wireless
-#      transmitFrequencyId: SuitSensor
+    - type: SuitSensor
+      randomMode: false
+      #controlsLocked: true
+      mode: SensorCords
+      activationContainer: "implant"
+    - type: DeviceNetwork
+      deviceNetId: Wireless
+      transmitFrequencyId: SuitSensor
+      savableAddress: false
 #    - type: StationLimitedNetwork
 #    - type: WirelessNetworkConnection
 #      range: 500
@@ -25,6 +26,15 @@
       - Dead
     - type: Rattle
       radioChannel: "Medical"
+
+- type: entity
+  suffix: Vitals Only
+  parent: MedicalTrackingImplant
+  id: MedicalTrackingImplantVitals
+  categories: [ HideSpawnMenu ]
+  components:
+    - type: SuitSensor
+      mode: SensorVitals
 
 - type: entity
   parent: BaseSubdermalImplant

@@ -29,6 +29,7 @@ using Content.Server._Mono.Radar; // Monolith
 using Content.Server.Explosion.EntitySystems;
 using Content.Server._NF.Medical.SuitSensors; // Frontier modification
 using Content.Shared.DeviceNetwork.Components;
+using Content.Shared.Implants.Components;
 
 namespace Content.Server.Medical.SuitSensors;
 
@@ -205,24 +206,50 @@ public sealed class SuitSensorSystem : EntitySystem
             return;
 
         string msg;
-        switch (component.Mode)
+        // Mono start - Basically, if you have a medical tracker implanted AND it has a different setting than the suit-sensors, it will tell you so.
+        using (args.PushGroup(nameof(SuitSensorComponent)))
         {
-            case SuitSensorMode.SensorOff:
-                msg = "suit-sensor-examine-off";
-                break;
-            case SuitSensorMode.SensorBinary:
-                msg = "suit-sensor-examine-binary";
-                break;
-            case SuitSensorMode.SensorVitals:
-                msg = "suit-sensor-examine-vitals";
-                break;
-            case SuitSensorMode.SensorCords:
-                msg = "suit-sensor-examine-cords";
-                break;
-            default:
+            switch (component.Mode)
+            {
+                case SuitSensorMode.SensorOff:
+                    msg = "suit-sensor-examine-off";
+                    break;
+                case SuitSensorMode.SensorBinary:
+                    msg = "suit-sensor-examine-binary";
+                    break;
+                case SuitSensorMode.SensorVitals:
+                    msg = "suit-sensor-examine-vitals";
+                    break;
+                case SuitSensorMode.SensorCords:
+                    msg = "suit-sensor-examine-cords";
+                    break;
+                default:
+                    return;
+            }
+            args.PushMarkup(Loc.GetString(msg));
+
+            // If you didn't want 24/7 surveillance on you, you should not have injected that 5G implant as soon as you woke up.
+            // We make sure the entity with the suitSensorComp is being worn
+            if (component.User is not { } user)
                 return;
+
+            // Is the user wearing the entity also implanted?
+            if (!TryComp<ImplantedComponent>(user, out var implantedComponent))
+                return;
+
+            // If the user is implanted, check all implants
+            foreach (var implant in implantedComponent.ImplantContainer.ContainedEntities)
+            {
+                // If it doesn't contain a suitSensorComp, skip.
+                if (!TryComp<SuitSensorComponent>(implant, out var implantSensor))
+                    break;
+                // If we didn't skip, check the mode.
+                // If the modes differ, we add a line in the description notifying the examinee.
+                if (implantSensor.Mode != component.Mode)
+                    args.PushMarkup(Loc.GetString("suit-sensor-examine-overriden") + " [color=yellow]" +  GetModeName(implantSensor.Mode) + "[/color]");
+            }
         }
-        args.PushMarkup(Loc.GetString(msg));
+        // Mono end
     }
 
     private void OnVerb(EntityUid uid, SuitSensorComponent component, GetVerbsEvent<Verb> args)

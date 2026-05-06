@@ -7,3 +7,6 @@ suit-sensor-signature-examine-on = Its radar signature is toggled on.
 
 suit-sensor-signature-verb-disable = Disable
 suit-sensor-signature-verb-enable = Enable
+
+# Medical Tracking Override
+suit-sensor-examine-overriden = Its sensors appear [color=darkred]overriden[/color] by an implant. Overriden to:
